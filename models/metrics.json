@@ -1,0 +1,33 @@
+{
+  "books_collected": 1196,
+  "books_modelled": 600,
+  "domains": 6,
+  "selected_k": 6,
+  "selected_svd_components": 6,
+  "silhouette": 0.6093,
+  "ari_vs_heldout_domain": 0.6665,
+  "nmi_vs_heldout_domain": 0.6667,
+  "stability_silhouette_min": 0.6093,
+  "stability_silhouette_mean": 0.6093,
+  "cluster_sizes": {
+    "0": 81,
+    "1": 125,
+    "2": 86,
+    "3": 112,
+    "4": 88,
+    "5": 108
+  },
+  "domain_sizes": {
+    "Agriculture": 100,
+    "Baking and Pastry": 100,
+    "Fermentation": 100,
+    "Food Business": 100,
+    "Food Safety": 100,
+    "Nutrition": 100
+  },
+  "pca_explained_variance": [
+    0.2595,
+    0.1953
+  ],
+  "leakage_control": "known_domain and source_topic excluded; source-topic phrase removed from subjects"
+}

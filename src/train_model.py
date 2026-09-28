@@ -45,7 +45,7 @@ def _remove_collection_label(subjects: object, source_topic: str) -> str:
 
 
 def clean_books(raw: pd.DataFrame, balance: bool = True) -> pd.DataFrame:
-    """Clean, consolidate six domains and optionally create a balanced catalogue."""
+    """Clean all books; optionally sample 100 from each specialist domain for fitting."""
     required = {"title", "authors", "subjects", "source", "source_topic"}
     missing = sorted(required.difference(raw.columns))
     if missing:
@@ -57,8 +57,7 @@ def clean_books(raw: pd.DataFrame, balance: bool = True) -> pd.DataFrame:
             books[column] = ""
         books[column] = books[column].fillna("").astype(str).str.strip()
     books = books[(books["title"] != "") & (books["authors"] != "")]
-    books = books[books["source_topic"].isin(DOMAIN_MAP)].copy()
-    books["known_domain"] = books["source_topic"].map(DOMAIN_MAP)
+    books["known_domain"] = books["source_topic"].map(DOMAIN_MAP).fillna("General Cooking & Food")
     books["subjects_clean"] = books.apply(
         lambda row: _remove_collection_label(row["subjects"], row["source_topic"]), axis=1
     )
@@ -81,6 +80,7 @@ def clean_books(raw: pd.DataFrame, balance: bool = True) -> pd.DataFrame:
     books = books.loc[~duplicate_key.duplicated()].copy()
 
     if balance:
+        books = books[books["known_domain"] != "General Cooking & Food"].copy()
         counts = books["known_domain"].value_counts()
         if (counts < BOOKS_PER_DOMAIN).any():
             shortage = counts[counts < BOOKS_PER_DOMAIN].to_dict()
@@ -110,6 +110,7 @@ def _vectorize(books: pd.DataFrame):
 def train(catalog_path: str = "data/books_combined.csv") -> dict[str, object]:
     raw = pd.read_csv(catalog_path)
     books = clean_books(raw, balance=True)
+    full_catalog = clean_books(raw, balance=False)
     vectorizer, tfidf = _vectorize(books)
 
     selection_rows: list[dict[str, float | int]] = []
@@ -155,6 +156,11 @@ def train(catalog_path: str = "data/books_combined.csv") -> dict[str, object]:
     model = KMeans(n_clusters=N_CLUSTERS, n_init=100, random_state=RANDOM_STATE)
     books["cluster"] = model.fit_predict(matrix)
 
+    # Extend the fitted model to every cleaned book. Evaluation stays on the
+    # balanced fitting sample; the app indexes the full catalogue.
+    full_matrix = reducer.transform(vectorizer.transform(full_catalog[TEXT_COLUMN]))
+    full_catalog["cluster"] = model.predict(full_matrix)
+
     pca = PCA(n_components=2, random_state=RANDOM_STATE)
     coordinates = pca.fit_transform(matrix)
     pca_frame = pd.DataFrame({
@@ -171,8 +177,8 @@ def train(catalog_path: str = "data/books_combined.csv") -> dict[str, object]:
     joblib.dump(reducer, "models/svd_reducer.joblib")
     joblib.dump(model, "models/kmeans.joblib")
     joblib.dump(pca, "models/pca.joblib")
-    sparse.save_npz("models/book_matrix.npz", sparse.csr_matrix(matrix))
-    books.to_csv("data/clustered_books.csv", index=False, encoding="utf-8-sig")
+    sparse.save_npz("models/book_matrix.npz", sparse.csr_matrix(full_matrix))
+    full_catalog.to_csv("data/clustered_books.csv", index=False, encoding="utf-8-sig")
     pca_frame.to_csv("outputs/pca_coordinates.csv", index=False, encoding="utf-8-sig")
     selection.to_csv("outputs/model_selection.csv", index=False)
     pd.DataFrame(stability).to_csv("outputs/stability_scores.csv", index=False)
@@ -184,6 +190,7 @@ def train(catalog_path: str = "data/books_combined.csv") -> dict[str, object]:
     metrics = {
         "books_collected": int(len(raw)),
         "books_modelled": int(len(books)),
+        "books_in_app": int(len(full_catalog)),
         "domains": int(books["known_domain"].nunique()),
         "selected_k": N_CLUSTERS,
         "selected_svd_components": components,
@@ -202,6 +209,7 @@ def train(catalog_path: str = "data/books_combined.csv") -> dict[str, object]:
         },
         "pca_explained_variance": [round(float(x), 4) for x in pca.explained_variance_ratio_],
         "leakage_control": "known_domain and source_topic excluded; source-topic phrase removed from subjects",
+        "evaluation_scope": "Six-domain balanced fitting sample; remaining books assigned to fitted clusters for recommendations",
     }
     Path("models/metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     return metrics

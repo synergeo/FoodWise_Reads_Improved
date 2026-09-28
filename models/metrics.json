@@ -1,6 +1,7 @@
 {
   "books_collected": 1196,
   "books_modelled": 600,
+  "books_in_app": 1196,
   "domains": 6,
   "selected_k": 6,
   "selected_svd_components": 6,
@@ -29,5 +30,6 @@
     0.2595,
     0.1953
   ],
-  "leakage_control": "known_domain and source_topic excluded; source-topic phrase removed from subjects"
+  "leakage_control": "known_domain and source_topic excluded; source-topic phrase removed from subjects",
+  "evaluation_scope": "Six-domain balanced fitting sample; remaining books assigned to fitted clusters for recommendations"
 }

@@ -8,14 +8,15 @@ The system helps food professionals, students and interested readers discover bo
 
 ## Improved clustering result
 
-The original 992-book exploratory model achieved a silhouette score of 0.1113 because many food topics overlapped. The expanded project now retains **1,196 unique books** after cross-source deduplication, exceeding the 1,050-book submission target. A balanced, quality-controlled catalogue of **600 books** (100 per domain) is used for clustering and recommendations.
+The original 992-book exploratory model achieved a silhouette score of 0.1113 because many food topics overlapped. The expanded project now retains **1,196 unique books** after cross-source deduplication, exceeding the 1,050-book submission target. A balanced sample of **600 books** (100 per domain) fits and evaluates clustering. The fitted model then assigns clusters to **all 1,196 cleaned books**, which are available for recommendations.
 
 | Metric | Improved result |
 |---|---:|
 | Silhouette score | **0.6093** |
 | Adjusted Rand Index | **0.6665** |
 | Normalized Mutual Information | **0.6667** |
-| Cluster sizes | 81-125 books |
+| Cluster sizes on evaluation sample | 81-125 books |
+| Books selectable in the app | **1,196** |
 | Stability across five seeds | 0.6093 every run |
 
 The known domain and source topic are held out of the clustering features. The exact collection-topic phrase is also removed from subject text before TF-IDF, reducing label leakage.
@@ -32,7 +33,7 @@ The known domain and source topic are held out of the clustering features. The e
 | Unsupervised learning | SVD representation testing followed by K-Means at the six-domain product design |
 | PCA | Two-dimensional cluster coordinates saved for visualization |
 | Recommender | Same-cluster candidates ranked by cosine similarity |
-| SQL | Clean catalogue loaded into SQLite with indexes and example queries |
+| SQL | All 1,196 clustered books loaded into SQLite with indexes and example queries |
 | Streamlit | Searchable book selector, topic filter, covers, similarity and source links |
 
 ## Install and run on Windows
@@ -58,7 +59,7 @@ The app normally opens at `http://localhost:8501`.
 5. Calculate cosine similarity from the fitted feature matrix.
 6. Return the closest books, excluding the selected title.
 
-The cluster supplies a broad thematic neighbourhood. Cosine similarity creates the final ranking inside that neighbourhood.
+The cluster supplies a broad thematic neighbourhood, and can be large for general cookbooks. Cosine similarity creates the final ranking inside that neighbourhood.
 
 ## Data responsibility
 
@@ -68,7 +69,7 @@ The collector requests five public list pages slowly and identifies itself. API 
 
 - Goodreads list metadata is less detailed than Open Library metadata.
 - Metadata similarity does not prove that an individual reader will like a book.
-- The balanced modelling catalogue uses 600 of the 1,196 collected records; the remainder stays available for acquisition and EDA evidence.
+- The 0.6093 silhouette score evaluates only the balanced 600-book fitting sample. All 1,196 books appear in the app, but books outside the fitting sample were assigned to the learned clusters without an independent clustering-quality assessment. The full assigned catalogue has uneven cluster sizes.
 - Sparse or inconsistent subject labels can still affect individual recommendations.
 - K-Means simplifies books that naturally belong to several topics.
 - Ratings from different sources are not perfectly comparable.

@@ -5,7 +5,8 @@
 - Unique cleaned catalogue: **1,196 books**
 - Minimum book requirement: **1,050 books — passed**
 - Exact title-author duplicates in the combined catalogue: **0**
-- Balanced clustering catalogue: **600 books**
+- Balanced fitting and evaluation sample: **600 books**
+- Books available in the app and SQLite database: **1,196**
 - Food domains: **6**, with **100 books per domain**
 - Selected K-Means clusters: **6**
 - Silhouette score: **0.6093 — above the 0.50 project target**

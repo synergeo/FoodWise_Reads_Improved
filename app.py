@@ -9,7 +9,8 @@ from src.recommender import recommend_books
 
 st.set_page_config(page_title="Food Book Recommender", page_icon="📚", layout="wide")
 st.title("📚 FoodWise Reads")
-st.write("Discover books across six focused food domains using cluster-assisted content similarity.")
+st.write("Explore the full food-book catalogue using cluster-assisted content similarity.")
+st.caption("The clustering metrics were measured on a balanced six-domain sample; all collected books can be selected here.")
 
 catalog_path = Path("data/clustered_books.csv")
 matrix_path = Path("models/book_matrix.npz")

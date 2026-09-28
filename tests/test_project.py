@@ -47,5 +47,7 @@ def test_submission_book_count_and_model_size():
     metrics = json.loads(Path("models/metrics.json").read_text(encoding="utf-8"))
     assert len(combined) >= 1050
     assert not combined.duplicated(["title", "authors"]).any()
-    assert len(clustered) == 600
+    assert len(clustered) == len(combined)
+    assert metrics["books_modelled"] == 600
+    assert metrics["books_in_app"] == len(clustered)
     assert metrics["silhouette"] >= 0.50
